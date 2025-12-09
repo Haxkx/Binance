@@ -21,17 +21,14 @@
     localStorage.setItem("binanceBalance", newBalance.toString());
   }
 
-  // Add amount to balance
-  function addToBalance(amount) {
-    if (amount <= 0) {
-      return alert("Amount must be > 0");
+  // Set balance to specific amount (replaces previous balance)
+  function setBalance(amount) {
+    if (amount < 0) {
+      return alert("Amount cannot be negative");
     }
 
-    const currentBalance = getBalance();
-    const newBalance = currentBalance + amount;
-    updateBalance(newBalance);
-
-    showNotification("Added " + formatNumber(amount) + " USDT to balance");
+    updateBalance(amount);
+    showNotification("Balance set to " + formatNumber(amount) + " USDT");
     updateUI();
   }
 
@@ -108,8 +105,8 @@
     setTimeout(() => notification.remove(), 2000);
   }
 
-  // Show add balance modal
-  function showAddBalanceModal() {
+  // Show set balance modal
+  function showSetBalanceModal() {
     const overlay = document.createElement("div");
     overlay.style.cssText = `
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
@@ -125,17 +122,20 @@
     `;
 
     modal.innerHTML = `
-      <h3 style="margin:0 0 15px 0; font-size:18px; color:#f0b90b;">Add USDT Balance</h3>
+      <h3 style="margin:0 0 15px 0; font-size:18px; color:#f0b90b;">Set USDT Balance</h3>
+      <div style="font-size:14px; margin-bottom:10px; padding:8px; background:#2b3139; border-radius:6px;">
+        Current Balance: <span style="color:#f0b90b; font-weight:bold;">${formatNumber(getBalance())} USDT</span>
+      </div>
       <label style="display:block; margin-bottom:10px; font-size:14px;">
-        Amount (USDT):<br>
-        <input id="addAmount" type="number" step="0.01" placeholder="Enter amount" style="width:100%; padding:8px; margin-top:4px; background:#2b3139; border:1px solid #444; border-radius:6px; color:#fff;">
+        New Balance (USDT):<br>
+        <input id="setAmount" type="number" step="0.01" placeholder="Enter new balance" style="width:100%; padding:8px; margin-top:4px; background:#2b3139; border:1px solid #444; border-radius:6px; color:#fff;">
       </label>
       <div style="font-size:12px; margin:10px 0; text-align:center;">
         <a href="https://t.me/onlysell919" target="_blank" style="color:#f0b90b; text-decoration:none;">@onlysell919</a>
       </div>
       <div style="display:flex; justify-content:space-between; margin-top:15px;">
-        <button id="addConfirm" style="flex:1; margin-right:10px; padding:10px; background:#f0b90b; border:none; border-radius:6px; color:#000; font-weight:bold;">Add Balance</button>
-        <button id="addCancel" style="flex:1; padding:10px; background:#2b3139; border:none; border-radius:6px; color:#fff;">Cancel</button>
+        <button id="setConfirm" style="flex:1; margin-right:10px; padding:10px; background:#f0b90b; border:none; border-radius:6px; color:#000; font-weight:bold;">Set Balance</button>
+        <button id="setCancel" style="flex:1; padding:10px; background:#2b3139; border:none; border-radius:6px; color:#fff;">Cancel</button>
       </div>
     `;
 
@@ -144,34 +144,34 @@
 
     // Focus on input
     setTimeout(() => {
-      const input = modal.querySelector("#addAmount");
+      const input = modal.querySelector("#setAmount");
       if (input) input.focus();
     }, 100);
 
     // Cancel button
-    modal.querySelector("#addCancel").onclick = () => overlay.remove();
+    modal.querySelector("#setCancel").onclick = () => overlay.remove();
 
     // Confirm button
-    modal.querySelector("#addConfirm").onclick = () => {
-      let amount = parseFloat(modal.querySelector("#addAmount").value.trim());
+    modal.querySelector("#setConfirm").onclick = () => {
+      let amount = parseFloat(modal.querySelector("#setAmount").value.trim());
 
-      if (isNaN(amount) || amount <= 0) {
-        return alert("Please enter valid amount > 0");
+      if (isNaN(amount) || amount < 0) {
+        return alert("Please enter valid amount (0 or greater)");
       }
 
       overlay.remove();
-      addToBalance(amount);
+      setBalance(amount);
     };
 
     // Enter key support
-    modal.querySelector("#addAmount").addEventListener("keypress", (e) => {
+    modal.querySelector("#setAmount").addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        modal.querySelector("#addConfirm").click();
+        modal.querySelector("#setConfirm").click();
       }
     });
   }
 
-  // Modify withdraw button to add balance
+  // Modify withdraw button to set balance
   function modifyWithdrawButton() {
     const withdrawButton = document.querySelector("#wallet-nav-withdraw");
     if (!withdrawButton) {
@@ -184,13 +184,13 @@
     // Change button text if possible
     const buttonText = newButton.querySelector(".button-text");
     if (buttonText) {
-      buttonText.textContent = "Add Balance";
+      buttonText.textContent = "Set Balance";
     }
 
     newButton.addEventListener("click", event => {
       event.preventDefault();
       event.stopImmediatePropagation();
-      showAddBalanceModal();
+      showSetBalanceModal();
     }, true);
   }
 
